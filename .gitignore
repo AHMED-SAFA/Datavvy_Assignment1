@@ -1,0 +1,42 @@
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml
+
+# Java / Maven
+vms-backend/target/
+vms-backend/.mvn/
+*.class
+*.log
+
+# Spring Boot local runtime data
+vms-backend/data/*.mv.db
+vms-backend/data/*.trace.db
+
+# Flutter / Dart
+vms-frontend/.dart_tool/
+vms-frontend/.flutter-plugins
+vms-frontend/.flutter-plugins-dependencies
+vms-frontend/.packages
+vms-frontend/.pub-cache/
+vms-frontend/build/
+vms-frontend/coverage/
+vms-frontend/pubspec.lock
+vms-frontend/*.iml
+
+# Flutter generated platform files
+vms-frontend/android/.gradle/
+vms-frontend/android/app/debug/
+vms-frontend/android/app/profile/
+vms-frontend/android/app/release/
+vms-frontend/ios/Flutter/.last_build_id
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
