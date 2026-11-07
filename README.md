@@ -1,8 +1,6 @@
-# Stark Group Vehicle Management System
+<h1 align='center'>Stark Group Vehicle Management System</h1>
 
-Assignment 1 for the Datavvy Academy course **Build a Full-Stack Web App with Flutter & Spring Boot**.
-
-The VMS is a full-stack fleet administration application with JWT login, vehicle CRUD, duplicate vehicle-number validation, search, responsive Flutter Web screens, and PostgreSQL persistence.
+<h3 align='center'> Assignment 1 for the Datavvy Academy course **Build a Full-Stack Web App with Flutter & Spring Boot. The VMS is a full-stack fleet administration application with JWT login, vehicle CRUD, duplicate vehicle-number validation, search, responsive Flutter Web screens, and PostgreSQL persistence. </h3>
 
 ## Features
 
@@ -92,6 +90,35 @@ assignment1/
     │       └── vehicles/
     └── test/
 ```
+
+# Screenshots
+
+### Landing Page
+
+<img width="1912" height="913" alt="landing" src="https://github.com/user-attachments/assets/98194c5a-2ffb-4b08-b4b2-ac434241e04d" />
+
+### Signing in with validations
+<img width="1920" height="877" alt="signin_invalid" src="https://github.com/user-attachments/assets/a470de13-62a8-4929-afa1-1aa2b0bbea80" />
+
+### Dashboard
+<img width="1235" height="856" alt="dash_withpagination" src="https://github.com/user-attachments/assets/ca60fe02-f0df-426f-9539-2932faf94928" />
+
+<img width="1918" height="916" alt="Screenshot 2026-11-07 234430" src="https://github.com/user-attachments/assets/3e08823e-a2a2-4048-b56b-9439bab4a7c4" />
+
+### Dark mode switch feature
+<img width="1666" height="818" alt="Screenshot 2026-11-07 234532" src="https://github.com/user-attachments/assets/3fae6090-c143-4eb5-8845-0255bf9c64e4" />
+
+### Register Vehicles
+<img width="1682" height="713" alt="Screenshot 2026-11-07 234612" src="https://github.com/user-attachments/assets/c867443d-ccea-41ab-891d-b7b863ef84c2" />
+
+### Edit Vehicles
+<img width="1752" height="791" alt="Screenshot 2026-11-07 234707" src="https://github.com/user-attachments/assets/a4caeb07-1702-4969-93c0-456a073b7216" />
+
+### Search vehicles
+<img width="1588" height="807" alt="image" src="https://github.com/user-attachments/assets/9c5d35bc-bd74-4a3c-87ab-42a37a5bca97" />
+
+### Responsive
+<img width="456" height="808" alt="image" src="https://github.com/user-attachments/assets/9396151e-1ad1-482c-b4b3-33731b64b954" />
 
 ## PostgreSQL Setup
 
@@ -338,25 +365,6 @@ r  Hot reload
 R  Hot restart
 q  Stop
 ```
-
-## Troubleshooting
-
-### PostgreSQL connection refused
-
-```powershell
-Get-Service *postgres*
-Test-NetConnection localhost -Port 5432
-```
-
-### Password authentication failed
-
-```powershell
-$env:DB_PASSWORD = "your-postgres-password"
-```
-
-### Frontend cannot connect
-
-Confirm Spring Boot is running on port `8081`, Flutter is running on port `8080`, and the frontend API base URL is `http://localhost:8081/api`.
 
 ## Architecture Decision Records
 
