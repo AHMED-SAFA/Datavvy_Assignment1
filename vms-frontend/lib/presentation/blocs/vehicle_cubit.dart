@@ -56,7 +56,8 @@ class VehicleCubit extends Cubit<VehicleState> {
       emit(VehicleState(
         status: VehicleStatus.failure,
         vehicles: state.vehicles,
-        errorMessage: error.toString().replaceFirst('Exception: ', ''),
+        // errorMessage: error.toString().replaceFirst('Exception: ', ''),
+        errorMessage: "Something went wrong. Check for duplicate inputs. Try again!",
       ));
       return false;
     }
