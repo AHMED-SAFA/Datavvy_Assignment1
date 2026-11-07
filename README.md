@@ -150,7 +150,7 @@ ORDER BY id DESC;
 Git Bash:
 
 ```bash
-cd /e/datavvy/assignment1/vms-backend
+cd /e/datavvy_Assignment1/vms-backend
 
 export JAVA_HOME="F:/jdk-21.0.6"
 export PATH="$JAVA_HOME/bin:$PATH"
@@ -184,7 +184,7 @@ HikariPool-1 - Start completed
 Open a second terminal:
 
 ```bash
-cd /e/datavvy/assignment1/vms-frontend
+cd /e/datavvy_Assignment1/vms-frontend
 flutter pub get
 flutter run -d chrome --web-port 8080
 ```
@@ -313,7 +313,7 @@ Presentation features are separated into `landing`, `auth`, and `vehicles`. Cubi
 Backend:
 
 ```bash
-cd /e/datavvy/assignment1/vms-backend
+cd /e/datavvy_Assignment1/vms-backend
 export JAVA_HOME="F:/jdk-21.0.6"
 "F:/apache-maven/bin/mvn.cmd" clean test
 ```
@@ -321,7 +321,7 @@ export JAVA_HOME="F:/jdk-21.0.6"
 Frontend:
 
 ```bash
-cd /e/datavvy/assignment1/vms-frontend
+cd /e/datavvy_Assignment1/vms-frontend
 flutter analyze
 flutter test
 flutter build web
@@ -353,18 +353,6 @@ Test-NetConnection localhost -Port 5432
 ```powershell
 $env:DB_PASSWORD = "your-postgres-password"
 ```
-
-Restart Spring Boot afterward.
-
-### No vehicles found
-
-Check backend logs for `PgConnection`, then run:
-
-```sql
-SELECT COUNT(*) FROM public.vehicles;
-```
-
-If the count is zero, restart Spring Boot and inspect the `data.sql` initialization error.
 
 ### Frontend cannot connect
 
