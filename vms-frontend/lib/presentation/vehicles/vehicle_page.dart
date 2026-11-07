@@ -96,55 +96,76 @@ class _VehiclePageState extends State<VehiclePage> {
           );
         },
         child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 700;
+            final horizontalPadding = isMobile ? 16.0 : 24.0;
+            return SingleChildScrollView(
+            padding: EdgeInsets.all(horizontalPadding),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1200),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(AppStrings.vehicles,
-                              style: Theme.of(context).textTheme.headlineLarge),
-                        ),
-                        FilledButton.icon(
-                          onPressed: () => _openForm(),
-                          icon: const Icon(Icons.add),
-                          label: const Text(AppStrings.registerVehicle),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _summaryCards(context),
-                    const SizedBox(height: 20),
+                    _pageHeader(isMobile),
+                    SizedBox(height: isMobile ? 16 : 20),
+                    _summaryCards(context, isMobile),
+                    SizedBox(height: isMobile ? 16 : 20),
                     TextField(
                       controller: _searchController,
+                      textInputAction: TextInputAction.search,
                       onSubmitted: (query) =>
                           context.read<VehicleCubit>().loadVehicles(query: query),
                       decoration: InputDecoration(
                         hintText: AppStrings.searchVehicles,
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: IconButton(
+                          tooltip: AppStrings.refresh,
                           onPressed: () {
                             _searchController.clear();
                             context.read<VehicleCubit>().loadVehicles();
                           },
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(Icons.refresh),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _vehicleList(constraints.maxWidth),
+                    SizedBox(height: isMobile ? 12 : 16),
+                    _vehicleList(constraints.maxWidth - horizontalPadding * 2),
                   ],
                 ),
               ),
             ),
-          ),
+          );},
         ),
       ),
+    );
+  }
+
+  Widget _pageHeader(bool isMobile) {
+    final title = Text(
+      AppStrings.vehicles,
+      style: Theme.of(context).textTheme.headlineLarge,
+    );
+    final action = FilledButton.icon(
+      onPressed: () => _openForm(),
+      icon: const Icon(Icons.add),
+      label: const Text(AppStrings.registerVehicle),
+    );
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          title,
+          const SizedBox(height: 12),
+          action,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: title),
+        action,
+      ],
     );
   }
 
@@ -210,31 +231,60 @@ class _VehiclePageState extends State<VehiclePage> {
     );
   }
 
-  Widget _summaryCards(BuildContext context) {
+  Widget _summaryCards(BuildContext context, bool isMobile) {
     final vehicles = context.watch<VehicleCubit>().state.vehicles;
     final active = vehicles.where((v) => v.status == 'ACTIVE').length;
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    final cards = [
+      _summaryCard(AppStrings.totalVehicles, '${vehicles.length}',
+          Icons.directions_car),
+      _summaryCard(AppStrings.activeVehicles, '$active', Icons.check_circle),
+      _summaryCard(AppStrings.inactiveVehicles, '${vehicles.length - active}',
+          Icons.pause_circle),
+    ];
+    if (isMobile) {
+      return Column(
+        children: [
+          for (var index = 0; index < cards.length; index++) ...[
+            SizedBox(width: double.infinity, child: cards[index]),
+            if (index < cards.length - 1) const SizedBox(height: 8),
+          ],
+        ],
+      );
+    }
+    return Row(
       children: [
-        _summaryCard(AppStrings.totalVehicles, '${vehicles.length}',
-            Icons.directions_car),
-        _summaryCard(AppStrings.activeVehicles, '$active', Icons.check_circle),
-        _summaryCard(AppStrings.inactiveVehicles, '${vehicles.length - active}',
-            Icons.pause_circle),
+        for (var index = 0; index < cards.length; index++) ...[
+          Expanded(child: cards[index]),
+          if (index < cards.length - 1) const SizedBox(width: 12),
+        ],
       ],
     );
   }
 
   Widget _summaryCard(String title, String value, IconData icon) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: ListTile(
-          leading: Icon(icon, color: AppColors.primary),
-          title: Text(title),
-          subtitle: Text(value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppColors.primary.withValues(alpha: .1),
+              child: Icon(icon, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 3),
+                  Text(value,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -298,16 +348,49 @@ class _VehiclePageState extends State<VehiclePage> {
   }
 
   Widget _vehicleCard(BuildContext context, Vehicle vehicle) => Card(
-        child: ListTile(
-          title: Text('${vehicle.vehicleNumber} • ${vehicle.brand} ${vehicle.model}'),
-          subtitle: Text('${vehicle.type} • ${vehicle.ownerName} • ${vehicle.year}'),
-          trailing: Wrap(children: [
-            _statusChip(vehicle.status),
-            IconButton(onPressed: () => _openForm(vehicle),
-                icon: const Icon(Icons.edit_outlined)),
-            IconButton(onPressed: () => _delete(vehicle),
-                icon: const Icon(Icons.delete_outline, color: AppColors.error)),
-          ]),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      vehicle.vehicleNumber,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  _statusChip(vehicle.status),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('${vehicle.brand} ${vehicle.model}',
+                  overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 4),
+              Text('${vehicle.type} • ${vehicle.ownerName} • ${vehicle.year}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _openForm(vehicle),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text('Edit'),
+                  ),
+                  IconButton(
+                    tooltip: AppStrings.delete,
+                    onPressed: () => _delete(vehicle),
+                    icon: const Icon(Icons.delete_outline,
+                        color: AppColors.error),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       );
 
