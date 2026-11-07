@@ -34,7 +34,7 @@ Future<void> main() async {
   ));
 }
 
-class VmsApp extends StatelessWidget {
+class VmsApp extends StatefulWidget {
   final AuthRepositoryImpl authRepository;
   final VehicleRepositoryImpl vehicleRepository;
 
@@ -45,28 +45,51 @@ class VmsApp extends StatelessWidget {
   });
 
   @override
+  State<VmsApp> createState() => _VmsAppState();
+}
+
+class _VmsAppState extends State<VmsApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => AuthCubit(repository: authRepository)..restoreSession(),
+          create: (_) => AuthCubit(repository: widget.authRepository)..restoreSession(),
         ),
         BlocProvider(
-          create: (_) => VehicleCubit(repository: vehicleRepository),
+          create: (_) => VehicleCubit(repository: widget.vehicleRepository),
         ),
       ],
       child: MaterialApp(
         title: AppStrings.appTitle,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const AuthGate(),
+        darkTheme: AppTheme.darkTheme,
+        themeMode: _themeMode,
+        home: AuthGate(
+          isDarkMode: _themeMode == ThemeMode.dark,
+          onToggleTheme: () => setState(() {
+            _themeMode = _themeMode == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark;
+          }),
+        ),
       ),
     );
   }
 }
 
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+  final bool isDarkMode;
+  final VoidCallback onToggleTheme;
+
+  const AuthGate({
+    super.key,
+    required this.isDarkMode,
+    required this.onToggleTheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +101,10 @@ class AuthGate extends StatelessWidget {
           );
         }
         if (state.status == AuthStatus.authenticated) {
-          return const VehiclePage();
+          return VehiclePage(
+            isDarkMode: isDarkMode,
+            onToggleTheme: onToggleTheme,
+          );
         }
         return const LoginPage();
       },
@@ -95,8 +121,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController(text: 'admin');
-  final _passwordController = TextEditingController(text: 'admin123');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -145,11 +172,21 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       validator: Validators.validatePassword,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppStrings.password,
-                        prefixIcon: Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
+                          icon: Icon(_obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
+                        ),
                       ),
                     ),
                     if (state.status == AuthStatus.failure) ...[
@@ -187,7 +224,14 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class VehiclePage extends StatefulWidget {
-  const VehiclePage({super.key});
+  final bool isDarkMode;
+  final VoidCallback onToggleTheme;
+
+  const VehiclePage({
+    super.key,
+    required this.isDarkMode,
+    required this.onToggleTheme,
+  });
 
   @override
   State<VehiclePage> createState() => _VehiclePageState();
@@ -243,14 +287,16 @@ class _VehiclePageState extends State<VehiclePage> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthCubit>().state;
     return Scaffold(
+      drawer: _buildSidebar(context, auth.username),
       appBar: AppBar(
-        title: const Text(AppStrings.appTitle),
+        title: const Text(AppStrings.navDashboard),
         actions: [
-          Center(child: Text(auth.username ?? '')),
           IconButton(
-            tooltip: AppStrings.logout,
-            onPressed: () => context.read<AuthCubit>().logout(),
-            icon: const Icon(Icons.logout),
+            tooltip: widget.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
+            onPressed: widget.onToggleTheme,
+            icon: Icon(widget.isDarkMode
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined),
           ),
           const SizedBox(width: 8),
         ],
@@ -312,6 +358,74 @@ class _VehiclePageState extends State<VehiclePage> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSidebar(BuildContext context, String? username) {
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              color: AppColors.primary,
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: AppColors.accent,
+                    child: Icon(Icons.directions_car,
+                        color: AppColors.primary, size: 28),
+                  ),
+                  SizedBox(height: 16),
+                  Text(AppStrings.appTitle,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                  SizedBox(height: 4),
+                  Text(AppStrings.appSubtitle,
+                      style: TextStyle(color: Colors.white70)),
+                ],
+              ),
+            ),
+            ListTile(
+              selected: true,
+              leading: const Icon(Icons.dashboard_outlined),
+              title: const Text(AppStrings.navDashboard),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.directions_car_outlined),
+              title: const Text(AppStrings.navVehicles),
+              onTap: () => Navigator.pop(context),
+            ),
+            const Spacer(),
+            ListTile(
+              leading: Icon(widget.isDarkMode
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined),
+              title: Text(widget.isDarkMode ? 'Light mode' : 'Dark mode'),
+              onTap: () {
+                Navigator.pop(context);
+                widget.onToggleTheme();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text(AppStrings.logout),
+              subtitle: Text(username ?? ''),
+              onTap: () {
+                Navigator.pop(context);
+                context.read<AuthCubit>().logout();
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );
@@ -480,6 +594,19 @@ class _VehicleFormDialogState extends State<VehicleFormDialog> {
     if (date != null) setState(() => _registrationDate = date);
   }
 
+  Future<void> _pickManufacturingYear() async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: DateTime(int.tryParse(_year.text) ?? DateTime.now().year),
+      firstDate: DateTime(1886),
+      lastDate: DateTime(2100),
+      helpText: 'Select manufacturing year',
+    );
+    if (selected != null) {
+      setState(() => _year.text = selected.year.toString());
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final vehicle = Vehicle(
@@ -519,8 +646,20 @@ class _VehicleFormDialogState extends State<VehicleFormDialog> {
                 _field(_brand, AppStrings.fieldBrand, Validators.validateBrand),
                 _field(_model, AppStrings.fieldModel, Validators.validateModel),
                 _field(_color, AppStrings.fieldColor, Validators.validateColor),
-                _field(_year, AppStrings.fieldYear, Validators.validateYear,
-                    keyboardType: TextInputType.number),
+                SizedBox(
+                  width: 250,
+                  child: TextFormField(
+                    controller: _year,
+                    readOnly: true,
+                    validator: Validators.validateYear,
+                    onTap: _pickManufacturingYear,
+                    decoration: const InputDecoration(
+                      labelText: AppStrings.fieldYear,
+                      prefixIcon: Icon(Icons.event_outlined),
+                      suffixIcon: Icon(Icons.calendar_month_outlined),
+                    ),
+                  ),
+                ),
                 _field(_owner, AppStrings.fieldOwnerName,
                     Validators.validateOwnerName),
                 _dropdown('Type', _type, ['CAR', 'TRUCK', 'BIKE', 'SUV', 'VAN'],
