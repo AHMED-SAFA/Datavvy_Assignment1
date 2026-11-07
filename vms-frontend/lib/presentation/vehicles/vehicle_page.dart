@@ -24,6 +24,9 @@ class VehiclePage extends StatefulWidget {
 
 class _VehiclePageState extends State<VehiclePage> {
   final _searchController = TextEditingController();
+  static const _pageSizes = [10, 20, 30, 50];
+  int _currentPage = 0;
+  int _pageSize = 10;
 
   @override
   void initState() {
@@ -52,14 +55,17 @@ class _VehiclePageState extends State<VehiclePage> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(AppStrings.confirmDeleteTitle),
         content: Text(
-            'Are you sure you want to delete ${vehicle.vehicleNumber}?'),
+          'Are you sure you want to delete ${vehicle.vehicleNumber}?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text(AppStrings.cancel)),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text(AppStrings.cancel),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text(AppStrings.delete)),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(AppStrings.delete),
+          ),
         ],
       ),
     );
@@ -77,11 +83,15 @@ class _VehiclePageState extends State<VehiclePage> {
         title: const Text(AppStrings.navDashboard),
         actions: [
           IconButton(
-            tooltip: widget.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
+            tooltip: widget.isDarkMode
+                ? 'Switch to light mode'
+                : 'Switch to dark mode',
             onPressed: widget.onToggleTheme,
-            icon: Icon(widget.isDarkMode
-                ? Icons.light_mode_outlined
-                : Icons.dark_mode_outlined),
+            icon: Icon(
+              widget.isDarkMode
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -100,42 +110,50 @@ class _VehiclePageState extends State<VehiclePage> {
             final isMobile = constraints.maxWidth < 700;
             final horizontalPadding = isMobile ? 16.0 : 24.0;
             return SingleChildScrollView(
-            padding: EdgeInsets.all(horizontalPadding),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _pageHeader(isMobile),
-                    SizedBox(height: isMobile ? 16 : 20),
-                    _summaryCards(context, isMobile),
-                    SizedBox(height: isMobile ? 16 : 20),
-                    TextField(
-                      controller: _searchController,
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (query) =>
-                          context.read<VehicleCubit>().loadVehicles(query: query),
-                      decoration: InputDecoration(
-                        hintText: AppStrings.searchVehicles,
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: IconButton(
-                          tooltip: AppStrings.refresh,
-                          onPressed: () {
-                            _searchController.clear();
-                            context.read<VehicleCubit>().loadVehicles();
-                          },
-                          icon: const Icon(Icons.refresh),
+              padding: EdgeInsets.all(horizontalPadding),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _pageHeader(isMobile),
+                      SizedBox(height: isMobile ? 16 : 20),
+                      _summaryCards(context, isMobile),
+                      SizedBox(height: isMobile ? 16 : 20),
+                      TextField(
+                        controller: _searchController,
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: (query) {
+                          setState(() => _currentPage = 0);
+                          context.read<VehicleCubit>().loadVehicles(
+                            query: query,
+                          );
+                        },
+                        decoration: InputDecoration(
+                          hintText: AppStrings.searchVehicles,
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: IconButton(
+                            tooltip: AppStrings.refresh,
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _currentPage = 0);
+                              context.read<VehicleCubit>().loadVehicles();
+                            },
+                            icon: const Icon(Icons.refresh),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: isMobile ? 12 : 16),
-                    _vehicleList(constraints.maxWidth - horizontalPadding * 2),
-                  ],
+                      SizedBox(height: isMobile ? 12 : 16),
+                      _vehicleList(
+                        constraints.maxWidth - horizontalPadding * 2,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );},
+            );
+          },
         ),
       ),
     );
@@ -154,11 +172,7 @@ class _VehiclePageState extends State<VehiclePage> {
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          title,
-          const SizedBox(height: 12),
-          action,
-        ],
+        children: [title, const SizedBox(height: 12), action],
       );
     }
     return Row(
@@ -184,18 +198,26 @@ class _VehiclePageState extends State<VehiclePage> {
                   CircleAvatar(
                     radius: 26,
                     backgroundColor: AppColors.accent,
-                    child: Icon(Icons.directions_car,
-                        color: AppColors.primary, size: 28),
+                    child: Icon(
+                      Icons.directions_car,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
                   ),
                   SizedBox(height: 16),
-                  Text(AppStrings.appTitle,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    AppStrings.appTitle,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   SizedBox(height: 4),
-                  Text(AppStrings.appSubtitle,
-                      style: TextStyle(color: Colors.white70)),
+                  Text(
+                    AppStrings.appSubtitle,
+                    style: TextStyle(color: Colors.white70),
+                  ),
                 ],
               ),
             ),
@@ -206,9 +228,11 @@ class _VehiclePageState extends State<VehiclePage> {
             ),
             const Spacer(),
             ListTile(
-              leading: Icon(widget.isDarkMode
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined),
+              leading: Icon(
+                widget.isDarkMode
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+              ),
               title: Text(widget.isDarkMode ? 'Light mode' : 'Dark mode'),
               onTap: () {
                 Navigator.pop(context);
@@ -235,11 +259,17 @@ class _VehiclePageState extends State<VehiclePage> {
     final vehicles = context.watch<VehicleCubit>().state.vehicles;
     final active = vehicles.where((v) => v.status == 'ACTIVE').length;
     final cards = [
-      _summaryCard(AppStrings.totalVehicles, '${vehicles.length}',
-          Icons.directions_car),
+      _summaryCard(
+        AppStrings.totalVehicles,
+        '${vehicles.length}',
+        Icons.directions_car,
+      ),
       _summaryCard(AppStrings.activeVehicles, '$active', Icons.check_circle),
-      _summaryCard(AppStrings.inactiveVehicles, '${vehicles.length - active}',
-          Icons.pause_circle),
+      _summaryCard(
+        AppStrings.inactiveVehicles,
+        '${vehicles.length - active}',
+        Icons.pause_circle,
+      ),
     ];
     if (isMobile) {
       return Column(
@@ -278,9 +308,13 @@ class _VehiclePageState extends State<VehiclePage> {
                 children: [
                   Text(title, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 3),
-                  Text(value,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -293,10 +327,12 @@ class _VehiclePageState extends State<VehiclePage> {
   Widget _vehicleList(double width) {
     final state = context.watch<VehicleCubit>().state;
     if (state.status == VehicleStatus.loading && state.vehicles.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(40),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
     if (state.vehicles.isEmpty) {
       return const Card(
@@ -306,98 +342,196 @@ class _VehiclePageState extends State<VehiclePage> {
         ),
       );
     }
+    final pageCount = (state.vehicles.length / _pageSize).ceil();
+    final page = _currentPage.clamp(0, pageCount - 1).toInt();
+    final pageVehicles = state.vehicles
+        .skip(page * _pageSize)
+        .take(_pageSize)
+        .toList(growable: false);
+    final pagination = _paginationControls(
+      totalItems: state.vehicles.length,
+      page: page,
+      pageCount: pageCount,
+    );
     if (width < 700) {
       return Column(
-        children: state.vehicles
-            .map((vehicle) => _vehicleCard(context, vehicle))
-            .toList(),
+        children: [
+          ...pageVehicles.map((vehicle) => _vehicleCard(context, vehicle)),
+          pagination,
+        ],
       );
     }
     return Card(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text(AppStrings.colVehicleNo)),
-            DataColumn(label: Text(AppStrings.colBrand)),
-            DataColumn(label: Text(AppStrings.colModel)),
-            DataColumn(label: Text(AppStrings.colType)),
-            DataColumn(label: Text(AppStrings.colYear)),
-            DataColumn(label: Text(AppStrings.colOwner)),
-            DataColumn(label: Text(AppStrings.colStatus)),
-            DataColumn(label: Text(AppStrings.colActions)),
-          ],
-          rows: state.vehicles.map((vehicle) => DataRow(cells: [
-            DataCell(Text(vehicle.vehicleNumber)),
-            DataCell(Text(vehicle.brand)),
-            DataCell(Text(vehicle.model)),
-            DataCell(Text(vehicle.type)),
-            DataCell(Text('${vehicle.year}')),
-            DataCell(Text(vehicle.ownerName)),
-            DataCell(_statusChip(vehicle.status)),
-            DataCell(Row(children: [
-              IconButton(onPressed: () => _openForm(vehicle),
-                  icon: const Icon(Icons.edit_outlined)),
-              IconButton(onPressed: () => _delete(vehicle),
-                  icon: const Icon(Icons.delete_outline, color: AppColors.error)),
-            ])),
-          ])).toList(),
-        ),
+      child: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text(AppStrings.colVehicleNo)),
+                DataColumn(label: Text(AppStrings.colBrand)),
+                DataColumn(label: Text(AppStrings.colModel)),
+                DataColumn(label: Text(AppStrings.colType)),
+                DataColumn(label: Text(AppStrings.colYear)),
+                DataColumn(label: Text(AppStrings.colOwner)),
+                DataColumn(label: Text(AppStrings.colStatus)),
+                DataColumn(label: Text(AppStrings.colActions)),
+              ],
+              rows: pageVehicles
+                  .map(
+                    (vehicle) => DataRow(
+                      cells: [
+                        DataCell(Text(vehicle.vehicleNumber)),
+                        DataCell(Text(vehicle.brand)),
+                        DataCell(Text(vehicle.model)),
+                        DataCell(Text(vehicle.type)),
+                        DataCell(Text('${vehicle.year}')),
+                        DataCell(Text(vehicle.ownerName)),
+                        DataCell(_statusChip(vehicle.status)),
+                        DataCell(
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () => _openForm(vehicle),
+                                icon: const Icon(Icons.edit_outlined),
+                              ),
+                              IconButton(
+                                onPressed: () => _delete(vehicle),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          pagination,
+        ],
+      ),
+    );
+  }
+
+  Widget _paginationControls({
+    required int totalItems,
+    required int page,
+    required int pageCount,
+  }) {
+    final firstItem = page * _pageSize + 1;
+    final lastItem = ((page + 1) * _pageSize).clamp(0, totalItems).toInt();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          Text('$firstItem-$lastItem of $totalItems vehicles'),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Rows:'),
+              const SizedBox(width: 8),
+              DropdownButton<int>(
+                value: _pageSize,
+                items: _pageSizes
+                    .map(
+                      (size) => DropdownMenuItem<int>(
+                        value: size,
+                        child: Text('$size'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (size) {
+                  if (size == null) return;
+                  setState(() {
+                    _pageSize = size;
+                    _currentPage = 0;
+                  });
+                },
+              ),
+              IconButton(
+                tooltip: 'Previous page',
+                onPressed: page > 0
+                    ? () => setState(() => _currentPage = page - 1)
+                    : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Text('${page + 1} / $pageCount'),
+              IconButton(
+                tooltip: 'Next page',
+                onPressed: page < pageCount - 1
+                    ? () => setState(() => _currentPage = page + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _vehicleCard(BuildContext context, Vehicle vehicle) => Card(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      vehicle.vehicleNumber,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  _statusChip(vehicle.status),
-                ],
+              Expanded(
+                child: Text(
+                  vehicle.vehicleNumber,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(height: 8),
-              Text('${vehicle.brand} ${vehicle.model}',
-                  overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 4),
-              Text('${vehicle.type} • ${vehicle.ownerName} • ${vehicle.year}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton.icon(
-                    onPressed: () => _openForm(vehicle),
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('Edit'),
-                  ),
-                  IconButton(
-                    tooltip: AppStrings.delete,
-                    onPressed: () => _delete(vehicle),
-                    icon: const Icon(Icons.delete_outline,
-                        color: AppColors.error),
-                  ),
-                ],
+              _statusChip(vehicle.status),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${vehicle.brand} ${vehicle.model}',
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${vehicle.type} • ${vehicle.ownerName} • ${vehicle.year}',
+            style: Theme.of(context).textTheme.bodySmall,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () => _openForm(vehicle),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text('Edit'),
+              ),
+              IconButton(
+                tooltip: AppStrings.delete,
+                onPressed: () => _delete(vehicle),
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
               ),
             ],
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 
   Widget _statusChip(String status) => Chip(
-        label: Text(status),
-        backgroundColor: status == 'ACTIVE'
-            ? AppColors.successLight
-            : AppColors.warningLight,
-      );
+    label: Text(status),
+    backgroundColor: status == 'ACTIVE'
+        ? AppColors.successLight
+        : AppColors.warningLight,
+  );
 }
